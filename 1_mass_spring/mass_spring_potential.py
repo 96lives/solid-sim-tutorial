@@ -4,7 +4,6 @@ import utils
 
 
 class MassSpringPotential:
-
     @staticmethod
     def val(
         x: np.ndarray,
