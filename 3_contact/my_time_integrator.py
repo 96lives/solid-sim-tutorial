@@ -1,41 +1,84 @@
-def step_forward(x, e, v, m, l2, k, y_ground, contact_area, is_DBC, h, tol):
+from energy.total_energy import TotalEnergy
+import numpy as np
+from scipy.sparse.linalg import spsolve
+from numpy.linalg import norm
+from typing import List, Tuple
+
+
+def step_forward(
+    x: np.ndarray,
+    e: List[Tuple[int, int]],
+    v: np.ndarray,
+    m: List[float],
+    l2: List[float],
+    k: List[float],
+    y_ground: float,
+    contact_area: List[float],
+    is_DBC: List[bool],
+    h: float,
+    tol: float,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Custom implementation of the time integration step.
-
-    Parameters:
-    -----------
-    x : numpy.ndarray
-        Current positions of nodes
-    e : list
-        List of edges (pairs of node indices)
-    v : numpy.ndarray
-        Current velocities of nodes
-    m : list
-        Mass of each node
-    l2 : list
-        Rest length squared for each spring
-    k : list
-        Spring stiffness for each spring
-    y_ground : float
-        Y-coordinate of the ground
-    contact_area : list
-        Contact area for each node
-    is_DBC : list
-        Boolean flags for Dirichlet boundary conditions
-    h : float
-        Time step size
-    tol : float
-        Tolerance for convergence
-
     Returns:
     --------
     tuple
         Updated positions and velocities (x_new, v_new)
     """
-    # TODO: Implement your custom time integration logic here
+    # Function body unchanged
+    x_tilde = x + h * v
+    x_i = x.copy()
+    prev_energy = TotalEnergy.val(
+        x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+    )
 
-    # For now, this is just a placeholder that returns the input unchanged
-    x_new = x.copy()
-    v_new = v.copy()
+    iter = 0
+    while True:
+        search_dir = get_search_dir(
+            x_i, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+        )
+        if norm(search_dir, np.inf) < tol:
+            break
 
-    return x_new, v_new
+        alpha = 1.0
+        x_i_next = x_i + alpha * search_dir
+        curr_energy = TotalEnergy.val(
+            x_i_next, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+        )
+        while curr_energy > prev_energy:
+            alpha *= 0.5
+            x_i_next = x_i + alpha * search_dir
+            curr_energy = TotalEnergy.val(
+                x_i_next, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+            )
+
+        prev_energy = curr_energy
+        x_i = x_i_next
+        iter += 1
+        print(f"Iteration: {iter}, Energy: {curr_energy}")
+
+    v_new = (x_i - x) / h
+    return x_i, v_new
+
+
+def get_search_dir(
+    x: np.ndarray,
+    e: List[Tuple[int, int]],
+    x_tilde: np.ndarray,
+    m: List[float],
+    l2: List[float],
+    k: List[float],
+    y_ground: float,
+    contact_area: List[float],
+    is_DBC: List[bool],
+    h: float,
+) -> np.ndarray:
+    """
+    Use Newton's method to solve the time integration step.
+    """
+    grad = TotalEnergy.grad(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h)
+    hess = TotalEnergy.hess(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h)
+    x_next = spsolve(hess.toarray(), -grad)
+    x_next = x_next.reshape(x.shape[0], 2)
+    search_dir = x_next - x
+    return search_dir
