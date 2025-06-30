@@ -5,6 +5,7 @@ from potential.base_potential import Potential
 from potential.gravitational_potential import GravitationalPotential
 from potential.inertia_potential import InertiaPotential
 from potential.mass_spring_potential import MassSpringPotential
+from potential.barrier_potential import BarrierPotential
 
 
 class IncrementalPotential(Potential):
@@ -30,8 +31,11 @@ class IncrementalPotential(Potential):
         mass_spring = MassSpringPotential.val(
             x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
         )
+        barrier = BarrierPotential.val(
+            x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+        )
 
-        ret = inertia + h**2 * (gravity + mass_spring)
+        ret = inertia + h**2 * (gravity + mass_spring + barrier)
         # print(
         #     f"Inertia: {inertia:.2f}, "
         #     f"Gravity: {h ** 2 * gravity:.2f}, "
@@ -62,7 +66,11 @@ class IncrementalPotential(Potential):
         mass_spring = MassSpringPotential.grad(
             x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
         )
-        ret = inertia + h**2 * (gravity + mass_spring)
+        barrier = BarrierPotential.grad(
+            x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+        )
+
+        ret = inertia + h**2 * (gravity + mass_spring + barrier)
         return ret
 
     @staticmethod
@@ -87,5 +95,9 @@ class IncrementalPotential(Potential):
         mass_spring = MassSpringPotential.hess(
             x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
         )
-        ret = inertia + h**2 * (gravity + mass_spring)
+        barrier = BarrierPotential.hess(
+            x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+        )
+
+        ret = inertia + h**2 * (gravity + mass_spring + barrier)
         return ret
