@@ -1,10 +1,10 @@
 import numpy as np
 from typing import List, Tuple
 from scipy.sparse import coo_matrix
-from energy.base_energy import Energy
+from potential.base_potential import Potential
 
 
-class GravityEnergy(Energy):
+class GravitationalPotential(Potential):
     g = 9.81  # Gravitational acceleration in m/s^2
 
     @staticmethod
@@ -51,7 +51,7 @@ class GravityEnergy(Energy):
             Updated positions and velocities (x_new, v_new)
         """
         m_array = np.array(m)
-        energy = GravityEnergy.g * sum(m_array * x[:, 1])
+        energy = GravitationalPotential.g * sum(m_array * x[:, 1])
         return energy
 
     @staticmethod
@@ -68,7 +68,7 @@ class GravityEnergy(Energy):
         h: float,
     ) -> np.ndarray:
         grad = np.zeros_like(x)
-        grad[:, 1] = -GravityEnergy.g * np.array(m)
+        grad[:, 1] = -GravitationalPotential.g * np.array(m)
         grad = grad.reshape(-1)
         return grad
 

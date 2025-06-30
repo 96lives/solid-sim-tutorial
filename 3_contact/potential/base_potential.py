@@ -3,7 +3,7 @@ from typing import List, Tuple
 from scipy.sparse import coo_matrix
 
 
-class Energy:
+class Potential:
 
     @staticmethod
     def val(
@@ -65,7 +65,7 @@ class Energy:
     ) -> np.ndarray:
         """
         :return:
-            Gradient of the energy with respect to the node positions
+            Gradient of the potential with respect to the node positions
             :rtype: np.ndarray of shape 2*n
         """
         raise NotImplementedError("Subclasses should implement this method")

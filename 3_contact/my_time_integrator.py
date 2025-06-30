@@ -1,4 +1,4 @@
-from energy.total_energy import TotalEnergy
+from potential.incremental_potential import IncrementalPotential
 import numpy as np
 from scipy.sparse.linalg import spsolve
 from numpy.linalg import norm
@@ -28,7 +28,7 @@ def step_forward(
     # Function body unchanged
     x_tilde = x + h * v
     x_i = x.copy()
-    prev_energy = TotalEnergy.val(
+    prev_energy = IncrementalPotential.val(
         x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
     )
 
@@ -42,13 +42,13 @@ def step_forward(
 
         alpha = 1.0
         x_i_next = x_i + alpha * search_dir
-        curr_energy = TotalEnergy.val(
+        curr_energy = IncrementalPotential.val(
             x_i_next, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
         )
         while curr_energy > prev_energy:
             alpha *= 0.5
             x_i_next = x_i + alpha * search_dir
-            curr_energy = TotalEnergy.val(
+            curr_energy = IncrementalPotential.val(
                 x_i_next, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
             )
 
@@ -76,8 +76,12 @@ def get_search_dir(
     """
     Use Newton's method to solve the time integration step.
     """
-    grad = TotalEnergy.grad(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h)
-    hess = TotalEnergy.hess(x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h)
+    grad = IncrementalPotential.grad(
+        x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+    )
+    hess = IncrementalPotential.hess(
+        x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
+    )
     x_next = spsolve(hess.toarray(), -grad)
     x_next = x_next.reshape(x.shape[0], 2)
     search_dir = x_next - x

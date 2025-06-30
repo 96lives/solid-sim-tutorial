@@ -1,12 +1,12 @@
-import numpy as np
 from typing import List, Tuple
+
+import numpy as np
 from scipy.sparse import coo_matrix
-from energy.base_energy import Energy
-from energy.gravity_energy import GravityEnergy
+
+from potential.base_potential import Potential
 
 
-class TotalEnergy(Energy):
-
+class InertiaPotential(Potential):
     @staticmethod
     def val(
         x: np.ndarray,
@@ -20,10 +20,7 @@ class TotalEnergy(Energy):
         is_DBC: List[bool],
         h: float,
     ) -> float:
-        gravity = GravityEnergy.val(
-            x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
-        )
-        return gravity
+        pass
 
     @staticmethod
     def grad(
@@ -38,10 +35,7 @@ class TotalEnergy(Energy):
         is_DBC: List[bool],
         h: float,
     ) -> np.ndarray:
-        gravity = GravityEnergy.grad(
-            x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
-        )
-        return gravity
+        pass
 
     @staticmethod
     def hess(
@@ -56,7 +50,4 @@ class TotalEnergy(Energy):
         is_DBC: List[bool],
         h: float,
     ) -> coo_matrix:
-        gravity = GravityEnergy.hess(
-            x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
-        )
-        return gravity
+        pass
