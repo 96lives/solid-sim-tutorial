@@ -20,7 +20,10 @@ class InertiaPotential(Potential):
         is_DBC: List[bool],
         h: float,
     ) -> float:
-        pass
+        diff = x - x_tilde  # n x 2
+        m_arr = np.array(m)[..., np.newaxis]  # n x 1
+        ret = 0.5 * np.sum(diff * m_arr * diff)
+        return ret
 
     @staticmethod
     def grad(
@@ -35,7 +38,10 @@ class InertiaPotential(Potential):
         is_DBC: List[bool],
         h: float,
     ) -> np.ndarray:
-        pass
+        diff = x - x_tilde  # n x 2
+        m_arr = np.array(m)[..., np.newaxis]  # n x 1
+        ret = (diff * m_arr).reshape(-1)
+        return ret
 
     @staticmethod
     def hess(
@@ -50,4 +56,8 @@ class InertiaPotential(Potential):
         is_DBC: List[bool],
         h: float,
     ) -> coo_matrix:
-        pass
+        m_arr = np.array(m)
+        m_arr_axis = np.stack([m_arr] * 2, axis=1).reshape(-1)
+        hess = np.diag(m_arr_axis)
+        hess_sparse = coo_matrix(hess)
+        return hess_sparse

@@ -37,7 +37,7 @@ def step_forward(
         search_dir = get_search_dir(
             x_i, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
         )
-        if norm(search_dir, np.inf) < tol:
+        if norm(search_dir, np.inf) / h < tol:
             break
 
         alpha = 1.0
@@ -55,7 +55,7 @@ def step_forward(
         prev_energy = curr_energy
         x_i = x_i_next
         iter += 1
-        print(f"Iteration: {iter}, Energy: {curr_energy}")
+        print(f"Iteration: {iter}, Energy: {curr_energy}, Alpha: {alpha}")
 
     v_new = (x_i - x) / h
     return x_i, v_new
@@ -82,7 +82,6 @@ def get_search_dir(
     hess = IncrementalPotential.hess(
         x, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
     )
-    x_next = spsolve(hess.toarray(), -grad)
-    x_next = x_next.reshape(x.shape[0], 2)
-    search_dir = x_next - x
+    search_dir = spsolve(hess.toarray(), -grad)
+    search_dir = search_dir.reshape(-1, 2)
     return search_dir

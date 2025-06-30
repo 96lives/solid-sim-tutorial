@@ -202,8 +202,8 @@ class IncrementalPotential:
         inertia = InertiaPotential.grad(x, e, x_tilde, m, l2, k, is_DBC, h)
         mass_spring = MassSpringPotential.grad(x, e, x_tilde, m, l2, k, is_DBC, h)
         gravity = GravityPotential.grad(x, e, x_tilde, m, l2, k, is_DBC, h)
-        grad = inertia + (h**2) * (mass_spring + gravity)
-        # grad = inertia + (h**2) * mass_spring
+        # grad = inertia + (h**2) * (mass_spring + gravity)
+        grad = inertia + (h**2) * gravity
         return grad
 
     @staticmethod
@@ -223,5 +223,5 @@ class IncrementalPotential:
         )
         gravity_sparse = GravityPotential.hessian(x, e, x_tilde, m, l2, k, is_DBC, h)
         hessian = inertia_sparse + (h**2) * (mass_spring_sparse + gravity_sparse)
-        # hessian = inertia_sparse + (h**2) * mass_spring_sparse
+        hessian = inertia_sparse + (h**2) * gravity_sparse
         return hessian
