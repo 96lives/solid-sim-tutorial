@@ -3,6 +3,7 @@ import numpy as np
 from scipy.sparse.linalg import spsolve
 from numpy.linalg import norm
 from typing import List, Tuple
+from potential.barrier_potential import BarrierPotential
 
 
 def step_forward(
@@ -40,7 +41,7 @@ def step_forward(
         if norm(search_dir, np.inf) / h < tol:
             break
 
-        alpha = 1.0
+        alpha = BarrierPotential.init_step_size(x_i, y_ground, search_dir)
         x_i_next = x_i + alpha * search_dir
         curr_energy = IncrementalPotential.val(
             x_i_next, e, x_tilde, m, l2, k, y_ground, contact_area, is_DBC, h
@@ -84,4 +85,5 @@ def get_search_dir(
     )
     search_dir = spsolve(hess.toarray(), -grad)
     search_dir = search_dir.reshape(-1, 2)
+
     return search_dir

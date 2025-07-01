@@ -36,12 +36,13 @@ class IncrementalPotential(Potential):
         )
 
         ret = inertia + h**2 * (gravity + mass_spring + barrier)
-        # print(
-        #     f"Inertia: {inertia:.2f}, "
-        #     f"Gravity: {h ** 2 * gravity:.2f}, "
-        #     f"MassSpring: {h**2 * mass_spring :.2f}, "
-        #     f"Total: {ret:.2f}"
-        # )
+        print(
+            f"Inertia: {inertia:.2f}, "
+            f"Gravity: {h ** 2 * gravity:.2f}, "
+            f"MassSpring: {h**2 * mass_spring :.2f}, "
+            f"Barrier: {h**2 * barrier:.2f}, "
+            f"Total: {ret:.2f}"
+        )
         return ret
 
     @staticmethod
