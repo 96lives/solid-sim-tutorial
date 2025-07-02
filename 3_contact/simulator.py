@@ -2,6 +2,8 @@
 
 import numpy as np
 import pygame
+
+pygame.init()
 import typer
 import square_mesh
 import time_integrator
@@ -19,7 +21,6 @@ def run_simulation(
     y_ground: float = -1.0,
     use_my_code: bool = False,
 ):
-    pygame.init()
 
     # simulation setup
     h = time_step_size
