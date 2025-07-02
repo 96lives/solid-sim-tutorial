@@ -184,6 +184,8 @@ class BarrierPotential(Potential):
         :param p: search direction. numpy.ndarray of shape (n, 2)
         :return:
         """
-        alpha = (y_ground - x[:, 1]) / p[:, 1]
-        alpha = min(0.9 * min(alpha), 1.0)
+        alpha = 1.0
+        for i in range(len(x)):
+            if p[i, 1] < 0.0:
+                alpha = min(alpha, (y_ground - x[i, 1]) / p[i, 1])
         return alpha
