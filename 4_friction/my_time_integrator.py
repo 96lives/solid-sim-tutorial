@@ -34,7 +34,7 @@ def step_forward(
     x_i = x.copy()
 
     p_args = PotentialArgs(
-        x=x,
+        x=x_i,
         e=e,
         x_tilde=x_tilde,
         m=m,
@@ -66,6 +66,20 @@ def step_forward(
 
         prev_energy = curr_energy
         x_i = x_i_next
+        p_args = PotentialArgs(
+            x=x_i,
+            e=e,
+            x_tilde=x_tilde,
+            m=m,
+            l2=l2,
+            k=k,
+            ground_n=ground_n,
+            ground_o=ground_o,
+            contact_area=contact_area,
+            mu=mu,
+            is_DBC=is_DBC,
+            h=h,
+        )
         iter += 1
         print(f"Iteration: {iter}, Energy: {curr_energy}, Alpha: {alpha}")
 
