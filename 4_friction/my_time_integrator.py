@@ -52,34 +52,24 @@ def step_forward(
 
     iter = 0
     while True:
+        p_args.x = x_i
         search_dir = get_search_dir(p_args)
         if norm(search_dir, np.inf) / h < tol:
             break
 
         alpha = BarrierPotential.init_step_size(x_i, ground_n, ground_o, search_dir)
         x_i_next = x_i + alpha * search_dir
+        p_args.x = x_i_next
         curr_energy = IncrementalPotential.val(p_args)
+
         while curr_energy > prev_energy:
             alpha *= 0.5
             x_i_next = x_i + alpha * search_dir
+            p_args.x = x_i_next
             curr_energy = IncrementalPotential.val(p_args)
 
         prev_energy = curr_energy
         x_i = x_i_next
-        p_args = PotentialArgs(
-            x=x_i,
-            e=e,
-            x_tilde=x_tilde,
-            m=m,
-            l2=l2,
-            k=k,
-            ground_n=ground_n,
-            ground_o=ground_o,
-            contact_area=contact_area,
-            mu=mu,
-            is_DBC=is_DBC,
-            h=h,
-        )
         iter += 1
         print(f"Iteration: {iter}, Energy: {curr_energy}, Alpha: {alpha}")
 

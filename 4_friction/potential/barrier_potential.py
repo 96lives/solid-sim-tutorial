@@ -53,8 +53,10 @@ class BarrierPotential(Potential):
     def val(
         p_args: PotentialArgs,
     ) -> float:
-        y_ground = 0
-        dist = p_args.x[:, 1] - y_ground
+        dist = np.sum(
+            p_args.ground_n.reshape(1, 2) * (p_args.x - p_args.ground_o.reshape(1, 2)),
+            axis=1,
+        )
         volume_weight = np.array(p_args.contact_area) * BarrierPotential.dhat
         ret = np.sum(volume_weight * BarrierPotential.barrier(dist))
         return ret
@@ -70,12 +72,13 @@ class BarrierPotential(Potential):
         """
         volume_weight = np.array(p_args.contact_area) * BarrierPotential.dhat
         volume_weight = volume_weight.reshape(-1, 1)  # n x 1
-        y_ground = 0.0
-        dist = p_args.x[:, 1] - y_ground  # n
+        dist = np.sum(
+            p_args.ground_n.reshape(1, 2) * (p_args.x - p_args.ground_o.reshape(1, 2)),
+            axis=1,
+        )
         barrier_partial = BarrierPotential.barrier_partial(dist).reshape(-1, 1)  # n x 1
 
-        d_grad = np.zeros_like(p_args.x)
-        d_grad[:, 1] = 1.0
+        d_grad = np.repeat(p_args.ground_n.reshape(1, 2), p_args.x.shape[0], axis=0)
         ret = volume_weight * barrier_partial * d_grad
         ret = ret.reshape(-1)
         return ret
@@ -85,8 +88,10 @@ class BarrierPotential(Potential):
         p_args: PotentialArgs,
     ) -> coo_matrix:
         volume_weight = np.array(p_args.contact_area) * BarrierPotential.dhat
-        y_ground = 0.0
-        dist = p_args.x[:, 1] - y_ground  # n
+        dist = np.sum(
+            p_args.ground_n.reshape(1, 2) * (p_args.x - p_args.ground_o.reshape(1, 2)),
+            axis=1,
+        )
         barrier_second_partial = BarrierPotential.barrier_second_partial(dist)
 
         # create sparse hessian matrix
@@ -122,8 +127,8 @@ class BarrierPotential(Potential):
         :return:
         """
         alpha = 1.0
-        # TODO
-        # for i in range(len(x)):
-        #     if p[i, 1] < 0.0:
-        #         alpha = min(alpha, (y_ground - x[i, 1]) / p[i, 1])
+        for i in range(len(x)):
+            alpha_i = np.dot(ground_n, ground_o - x[i]) / np.dot(ground_n, p[i])
+            if np.dot(ground_n, p[i]) < 0:
+                alpha = min(alpha, 0.9 * alpha_i)
         return alpha
