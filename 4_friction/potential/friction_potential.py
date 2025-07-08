@@ -29,9 +29,7 @@ class FrictionPotential(Potential):
         elif v_bar_norm < 0:
             raise ValueError("y must be positive")
         else:
-            val = (
-                -(v_bar_norm) / FrictionPotential.epsv**2 + 2 / FrictionPotential.epsv
-            )
+            val = -(v_bar_norm) / FrictionPotential.epsv**2 + 2 / FrictionPotential.epsv
             return val
 
     @staticmethod
@@ -60,15 +58,14 @@ class FrictionPotential(Potential):
 
     @staticmethod
     def val(p_args: PotentialArgs) -> float:
-        v = p_args.x - p_args.x_n
+        v = (p_args.x - p_args.x_n) / p_args.h
         T = np.eye(2) - np.outer(p_args.ground_n, p_args.ground_n)
-        h_hat = p_args.h
 
         ret = 0.0
         for i in range(v.shape[0]):
             v_bar = T.T @ v[i]
             potential_i = p_args.mu_lambda[i] * FrictionPotential.f0(
-                np.linalg.norm(v_bar * h_hat), h_hat
+                np.linalg.norm(v_bar * p_args.h), p_args.h
             )
             ret += potential_i
         return ret
@@ -79,7 +76,7 @@ class FrictionPotential(Potential):
     ) -> np.ndarray:
         grad = np.zeros_like(p_args.x)
 
-        v = p_args.x - p_args.x_n
+        v = (p_args.x - p_args.x_n) / p_args.h
         T = np.eye(2) - np.outer(p_args.ground_n, p_args.ground_n)
         for i in range(len(p_args.x)):
             # If there is contact
@@ -98,7 +95,7 @@ class FrictionPotential(Potential):
     ) -> coo_matrix:
         i_coords, j_coords, vals = [], [], []
 
-        v = p_args.x - p_args.x_n
+        v = (p_args.x - p_args.x_n) / p_args.h
         T = np.eye(2) - np.outer(p_args.ground_n, p_args.ground_n)
         for i in range(len(p_args.x)):
             # Exists contact
