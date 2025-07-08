@@ -132,3 +132,23 @@ class BarrierPotential(Potential):
             if np.dot(ground_n, p[i]) < 0:
                 alpha = min(alpha, 0.9 * alpha_i)
         return alpha
+
+    @staticmethod
+    def compute_mu_lambda(
+        x: np.ndarray,
+        ground_n: np.ndarray,
+        ground_o: np.ndarray,
+        contact_area: List[float],
+        mu: float,
+    ) -> np.ndarray:
+        volume_weight = np.array(contact_area) * BarrierPotential.dhat
+        dist = np.sum(ground_n.reshape(1, 2) * (ground_o.reshape(1, 2) - x), axis=1)
+        barrier_partial = BarrierPotential.barrier_partial(np.abs(dist))  # n
+
+        mu_lambda = np.zeros(len(x))
+        for i in range(len(x)):
+            if abs(dist[i]) < BarrierPotential.dhat:
+                mu_lambda[i] = -mu * volume_weight[i] * barrier_partial[i]
+        if np.isnan(mu_lambda).any():
+            breakpoint()
+        return mu_lambda

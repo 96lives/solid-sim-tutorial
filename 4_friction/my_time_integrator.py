@@ -33,6 +33,10 @@ def step_forward(
     x_tilde = x + h * v
     x_i = x.copy()
 
+    mu_lambda = BarrierPotential.compute_mu_lambda(
+        x=x, ground_n=ground_n, ground_o=ground_o, contact_area=contact_area, mu=mu
+    )
+
     p_args = PotentialArgs(
         x=x_i,
         e=e,
@@ -46,6 +50,8 @@ def step_forward(
         mu=mu,
         is_DBC=is_DBC,
         h=h,
+        mu_lambda=mu_lambda,
+        x_n=x,
     )
 
     prev_energy = IncrementalPotential.val(p_args)
@@ -71,7 +77,7 @@ def step_forward(
         prev_energy = curr_energy
         x_i = x_i_next
         iter += 1
-        print(f"Iteration: {iter}, Energy: {curr_energy}, Alpha: {alpha}")
+        print(f"Iteration: {iter}, Energy: {curr_energy}, Alpha: {alpha:.2f}")
 
     v_new = (x_i - x) / h
     return x_i, v_new
