@@ -18,6 +18,8 @@ class PotentialArgs:
     mu: float
     is_DBC: List[bool]
     h: float
+    mu_lambda: np.ndarray
+    x_n: np.ndarray
     """
     Parameters:
     -----------
