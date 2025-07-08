@@ -8,6 +8,11 @@ from potential.mass_spring_potential import MassSpringPotential
 from potential.barrier_potential import BarrierPotential
 from potential.potential_args import PotentialArgs
 from potential.friction_potential import FrictionPotential
+import FrictionEnergy
+import InertiaEnergy
+import BarrierEnergy
+import MassSpringEnergy
+import GravityEnergy
 
 
 class IncrementalPotential(Potential):
@@ -34,22 +39,59 @@ class IncrementalPotential(Potential):
 
     @staticmethod
     def grad(p_args: PotentialArgs) -> np.ndarray:
-        inertia = InertiaPotential.grad(p_args)
-        gravity = GravitationalPotential.grad(p_args)
-        mass_spring = MassSpringPotential.grad(p_args)
-        barrier = BarrierPotential.grad(p_args)
-        friction = FrictionPotential.grad(p_args)
+        # inertia = InertiaPotential.grad(p_args)
+        inertia = InertiaEnergy.grad(p_args.x, p_args.x_tilde, p_args.m).reshape(-1)
+        # gravity = GravitationalPotential.grad(p_args)
+        gravity = GravityEnergy.grad(p_args.x, p_args.m).reshape(-1)
+        # mass_spring = MassSpringPotential.grad(p_args)
+        mass_spring = MassSpringEnergy.grad(
+            p_args.x, p_args.e, p_args.l2, p_args.k
+        ).reshape(-1)
+        # barrier = BarrierPotential.grad(p_args)
+        barrier = BarrierEnergy.grad(
+            p_args.x, p_args.ground_n, p_args.ground_o, p_args.contact_area
+        ).reshape(-1)
+        # friction = FrictionPotential.grad(p_args)
+        v = p_args.x - p_args.x_n
+        friction = FrictionEnergy.grad(
+            v, p_args.mu_lambda, p_args.h, p_args.ground_n
+        ).reshape(-1)
 
         ret = inertia + p_args.h**2 * (gravity + mass_spring + barrier + friction)
         return ret
 
     @staticmethod
     def hess(p_args: PotentialArgs) -> coo_matrix:
-        inertia = InertiaPotential.hess(p_args)
+        import scipy.sparse as sparse
+
+        # inertia = InertiaPotential.hess(p_args)
+        ijv = InertiaEnergy.hess(p_args.x, p_args.x_tilde, p_args.m)
+        inertia = sparse.coo_matrix(
+            (ijv[2], (ijv[0], ijv[1])), shape=(len(p_args.x) * 2, len(p_args.x) * 2)
+        ).tocsr()
+
         gravity = GravitationalPotential.hess(p_args)
-        mass_spring = MassSpringPotential.hess(p_args)
-        barrier = BarrierPotential.hess(p_args)
-        friction = FrictionPotential.hess(p_args)
+
+        # mass_spring = MassSpringPotential.hess(p_args)
+        ijv = MassSpringEnergy.hess(p_args.x, p_args.e, p_args.l2, p_args.k)
+        mass_spring = sparse.coo_matrix(
+            (ijv[2], (ijv[0], ijv[1])), shape=(len(p_args.x) * 2, len(p_args.x) * 2)
+        ).tocsr()
+
+        # barrier = BarrierPotential.hess(p_args)
+        ijv = BarrierEnergy.hess(
+            p_args.x, p_args.ground_n, p_args.ground_o, p_args.contact_area
+        )
+        barrier = sparse.coo_matrix(
+            (ijv[2], (ijv[0], ijv[1])), shape=(len(p_args.x) * 2, len(p_args.x) * 2)
+        ).tocsr()
+
+        # friction = FrictionPotential.hess(p_args)
+        v = p_args.x - p_args.x_n
+        ijv = FrictionEnergy.hess(v, p_args.mu_lambda, p_args.h, p_args.ground_n)
+        friction = sparse.coo_matrix(
+            (ijv[2], (ijv[0], ijv[1])), shape=(len(p_args.x) * 2, len(p_args.x) * 2)
+        ).tocsr()
 
         ret = inertia + p_args.h**2 * (gravity + mass_spring + barrier + friction)
         return ret

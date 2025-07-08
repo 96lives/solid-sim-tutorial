@@ -5,6 +5,7 @@ from numpy.linalg import norm
 from typing import List, Tuple
 from potential.barrier_potential import BarrierPotential
 from potential.potential_args import PotentialArgs
+from BarrierEnergy import compute_mu_lambda, init_step_size
 
 
 def step_forward(
@@ -33,8 +34,8 @@ def step_forward(
     x_tilde = x + h * v
     x_i = x.copy()
 
-    mu_lambda = BarrierPotential.compute_mu_lambda(
-        x=x, ground_n=ground_n, ground_o=ground_o, contact_area=contact_area, mu=mu
+    mu_lambda = compute_mu_lambda(
+        x=x, n=ground_n, o=ground_o, contact_area=contact_area, mu=mu
     )
 
     p_args = PotentialArgs(
@@ -63,7 +64,8 @@ def step_forward(
         if norm(search_dir, np.inf) / h < tol:
             break
 
-        alpha = BarrierPotential.init_step_size(x_i, ground_n, ground_o, search_dir)
+        # alpha = BarrierPotential.init_step_size(x_i, ground_n, ground_o, search_dir)
+        alpha = init_step_size(x_i, ground_n, ground_o, search_dir)
         x_i_next = x_i + alpha * search_dir
         p_args.x = x_i_next
         curr_energy = IncrementalPotential.val(p_args)
