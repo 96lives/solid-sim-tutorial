@@ -17,6 +17,10 @@ class PotentialArgs:
     contact_area: List[float]
     mu: float
     is_DBC: List[bool]
+    DBC: List[int]
+    DBC_v: List[np.ndarray]
+    DBC_limit: List[np.ndarray]
+    DBC_stiff: List[float]
     h: float
     mu_lambda: np.ndarray
     x_n: np.ndarray
